@@ -37,8 +37,23 @@ const removeNote = async (id) => {
 	console.log(chalk.bgGreen('Note was removed!'))
 }
 
+const editNote = async (id, title) => {
+	const notes = await getNotes()
+	const noteToEdit = notes.find((note) => note.id === id)
+	if (noteToEdit) {
+		noteToEdit.title = title
+
+		await fs.writeFile(notesPath, JSON.stringify(notes))
+		console.log(chalk.bgGreen('Note was edited!'))
+	} else {
+		console.log(chalk.bgRed('Note not found!'))
+	}
+}
+
 module.exports = {
 	addNote,
 	printNotes,
 	removeNote,
+	getNotes,
+	editNote,
 }

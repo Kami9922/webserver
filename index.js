@@ -1,6 +1,8 @@
 const express = require('express')
 const chalk = require('chalk')
 const path = require('path')
+const mongoose = require('mongoose')
+
 const {
 	addNote,
 	getNotes,
@@ -28,25 +30,38 @@ app.get('/', async (req, res) => {
 		title: 'Express App',
 		notes: await getNotes(),
 		created: false,
+		error: false,
 	})
 })
 
 app.post('/', async (req, res) => {
-	await addNote(req.body.title)
-	res.render('index', {
-		title: 'Express App',
-		notes: await getNotes(),
-		created: true,
-	})
+	try {
+		await addNote(req.body.title)
+		res.render('index', {
+			title: 'Express App',
+			notes: await getNotes(),
+			created: true,
+			error: false,
+		})
+	} catch (error) {
+		console.error('Creation error', error)
+		await addNote(req.body.title)
+		res.render('index', {
+			title: 'Express App',
+			created: false,
+			error: true,
+		})
+	}
 })
 
 app.put('/:id', async (req, res) => {
-	await editNote(req.params.id, req.body.title)
+	await editNote({ id: req.params.id, title: req.body.title })
 
 	res.render('index', {
 		title: 'Express App',
 		notes: await getNotes(),
 		created: false,
+		error: false,
 	})
 })
 
@@ -56,9 +71,19 @@ app.delete('/:id', async (req, res) => {
 		title: 'Express App',
 		notes: await getNotes(),
 		created: false,
+		error: false,
 	})
 })
 
-app.listen(port, () => {
-	console.log(chalk.green(`Server has been started on port ${port}...`))
-})
+mongoose
+	.connect(
+		'mongodb+srv://kami:jvtqhfthjljve111@cluster.coi65.mongodb.net/Test?retryWrites=true&w=majority&appName=Cluster',
+		{
+			dbName: 'Test',
+		}
+	)
+	.then(() => {
+		app.listen(port, () => {
+			console.log(chalk.green(`Server has been started on port ${port}...`))
+		})
+	})
